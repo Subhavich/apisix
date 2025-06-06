@@ -5,6 +5,7 @@ import ErrorModal from "../components/ErrorModal";
 import DefaultServices from "../components/ServicesList";
 const API_URL = import.meta.env.VITE_API_URL;
 const ADMIN = import.meta.env.VITE_API_KEY || "admin";
+
 export default function Upstreams() {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
@@ -21,10 +22,9 @@ export default function Upstreams() {
     const fetchData = async () => {
       try {
         const res = await fetch(`${API_URL}/apisix/admin/upstreams`, {
-          method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "X-API-KEY": `${ADMIN}`,
+            "X-API-KEY": ADMIN,
           },
         });
         const json = await res.json();
@@ -39,32 +39,35 @@ export default function Upstreams() {
   }, []);
 
   return (
-    <>
-      <h1>Upstreams</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-semibold mb-2">Upstreams</h1>
       <DefaultServices />
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
-      <div>
-        {data && data.length > 0 ? (
-          data.map((node, i) => (
-            <Item
-              key={node.key || i}
-              node={node}
-              setData={setData}
-              setError={setError}
-              setForm={setForm}
-            />
-          ))
-        ) : (
-          <p className="my-2">Please Create Upstream</p>
-        )}
-      </div>
-      <Create
-        form={form}
-        setForm={setForm}
-        setData={setData}
-        setError={setError}
-      />
-    </>
+      <section className="flex flex-col sm:flex-row justify-between gap-4">
+        <aside className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:max-w-7/12">
+          {data && data.length > 0 ? (
+            data.map((node, i) => (
+              <Item
+                key={node.key || i}
+                node={node}
+                setData={setData}
+                setError={setError}
+                setForm={setForm}
+              />
+            ))
+          ) : (
+            <p className="my-2">Please Create Upstream</p>
+          )}
+        </aside>
+
+        <Create
+          form={form}
+          setForm={setForm}
+          setData={setData}
+          setError={setError}
+        />
+      </section>
+    </div>
   );
 }
 
@@ -134,7 +137,7 @@ function Create({ form, setForm, setError, setData }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-4 p-4 bg-white text-black flex flex-col gap-3"
+      className="md:max-w-[375px] sm:w-full mt-4 p-4 shadow border border-gray-200 rounded text-black flex flex-col gap-3"
     >
       <h2 className="text-lg font-bold">Create New Upstream</h2>
 
@@ -146,24 +149,23 @@ function Create({ form, setForm, setError, setData }) {
         required
         placeholder="Unique name like 'json' or 'gofiber'"
       />
-
       <FormField
         label="Target Node"
         name="node"
         value={form.node}
         onChange={handleChange}
         required
-        placeholder="Format: domain:port (e.g. jsonplaceholder.typicode.com:443)"
+        placeholder="e.g. jsonplaceholder.typicode.com:443"
       />
+
       <SelectField
         label="Scheme"
         name="scheme"
         value={form.scheme}
         onChange={handleChange}
-        placeholder="Use 80 for HTTP or 443 for HTTPS"
         options={[
-          { value: "http", label: "http (e.g. Port 8080, 80, 8888)" },
-          { value: "https", label: "https (e.g. Port 443, 8443)" },
+          { value: "http", label: "http (e.g. Port 80)" },
+          { value: "https", label: "https (e.g. Port 443)" },
         ]}
       />
 
@@ -177,14 +179,15 @@ function Create({ form, setForm, setError, setData }) {
           { value: "chash", label: "chash" },
         ]}
       />
+
       <SelectField
         label="Pass Host"
         name="pass_host"
         value={form.pass_host}
         onChange={handleChange}
         options={[
-          { value: "pass", label: "pass (keep incoming Host header)" },
-          { value: "rewrite", label: "rewrite (override with upstream host)" },
+          { value: "pass", label: "pass (keep incoming Host)" },
+          { value: "rewrite", label: "rewrite (override host)" },
         ]}
       />
 
@@ -195,7 +198,7 @@ function Create({ form, setForm, setError, setData }) {
           value={form.upstream_host}
           onChange={handleChange}
           required
-          placeholder="Domain name (e.g. jsonplaceholder.typicode.com)"
+          placeholder="e.g. jsonplaceholder.typicode.com"
         />
       )}
 
@@ -282,15 +285,15 @@ function Item({ node, setData, setError, setForm }) {
 
   return (
     <div
-      className="my-4 p-4 bg-white text-black rounded shadow cursor-pointer hover:bg-gray-50 transition"
+      className="my-4 p-2 bg-white flex flex-col justify-center gap-1 max-h-56 md:w-40 md:max-w-[375px] text-black rounded cursor-pointer shadow border border-gray-200 hover:bg-gray-300 transition"
       onClick={handleFillForm}
     >
-      <h3 className="font-bold text-lg">{id}</h3>
-      <p>Scheme: {scheme}</p>
-      <p>Type: {type}</p>
+      <h3 className="text-xs sm:text-sm font-bold">Upstream: {id}</h3>
+      <p className="text-xs">Scheme: {scheme}</p>
+      <p className="text-xs">Type: {type}</p>
 
       {linkedRoutes.length > 0 && (
-        <div className="mt-2">
+        <div className="text-xs mt-2">
           <p className="font-semibold">Linked Routes:</p>
           <ul className="list-disc list-inside">
             {linkedRoutes.map((route) => (
