@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { SelectField, FormField } from "../components/Forms";
 import { Link } from "react-router-dom";
 import ErrorModal from "../components/ErrorModal";
+import UpstreamList from "../components/UpstreamList";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ADMIN = import.meta.env.VITE_API_KEY || "admin";
@@ -41,6 +42,7 @@ export default function Routes() {
   return (
     <>
       <h1>Routes</h1>
+      <UpstreamList />
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
       <div>
         {routes.length > 0 ? (
