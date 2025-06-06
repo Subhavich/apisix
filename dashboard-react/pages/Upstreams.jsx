@@ -139,7 +139,7 @@ function Create({ form, setForm, setError, setData }) {
       onSubmit={handleSubmit}
       className="md:max-w-[375px] sm:w-full mt-4 p-4 shadow border border-gray-200 rounded text-black flex flex-col gap-3"
     >
-      <h2 className="text-lg font-bold">Create New Upstream</h2>
+      <h2 className="text-lg font-bold">Create/Edit Upstream</h2>
 
       <FormField
         label="Upstream ID"

@@ -145,7 +145,7 @@ function CreateRoute({ form, setForm, setRoutes, setError }) {
       onSubmit={handleSubmit}
       className="md:max-w-[375px] sm:w-full   mt-4 p-4 shadow border border-gray-200 rounded  text-black flex flex-col gap-3"
     >
-      <h2 className="text-lg font-bold">Create Route</h2>
+      <h2 className="text-lg font-bold">Create/Edit Route</h2>
 
       <FormField
         name="id"
