@@ -99,6 +99,8 @@ services:
 
   gofiber:
     image: subhavich/gofiber:latest
+    platform: linux/amd64
+
     restart: always
     container_name: gofiber_backend
     ports:
