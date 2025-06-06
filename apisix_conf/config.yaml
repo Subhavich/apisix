@@ -1,0 +1,26 @@
+# apisix_conf/config.yaml
+apisix:
+  node_listen: 9080
+  enable_ipv6: false
+  # enable_admin: true
+  allow_admin:
+    - 0.0.0.0/0
+
+  admin_key:
+    - name: "admin"
+      key: admin
+      role: admin
+    - name: "viewer"
+      key: viewer
+      role: viewer
+
+  enable_control: true
+  control:
+    ip: "0.0.0.0"
+    port: 9092
+
+etcd:
+  host:
+    - "http://etcd:2379"
+  prefix: "/apisix"
+  timeout: 30

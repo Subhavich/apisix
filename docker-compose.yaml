@@ -1,0 +1,331 @@
+
+
+services:
+
+  wordpress:
+    image: bitnami/wordpress:latest
+    restart: always
+    ports:
+      - "8081:8080"  # Bitnami WP uses 8080 internally
+    environment:
+      WORDPRESS_DATABASE_HOST: wordpress_db
+      WORDPRESS_DATABASE_PORT_NUMBER: 3306
+      WORDPRESS_DATABASE_USER: exampleuser
+      WORDPRESS_DATABASE_PASSWORD: examplepass
+      WORDPRESS_DATABASE_NAME: exampledb
+
+      WORDPRESS_USERNAME: admin
+      WORDPRESS_PASSWORD: adminpass
+      WORDPRESS_EMAIL: admin@example.com
+      WORDPRESS_FIRST_NAME: Admin
+      WORDPRESS_LAST_NAME: User
+      WORDPRESS_SKIP_BOOTSTRAP: no
+      WORDPRESS_BLOG_NAME: "Headless WP"
+
+      WORDPRESS_PLUGINS: wp-basic-authentication
+
+    volumes:
+      - wordpress_data:/bitnami/wordpress
+    networks:
+      - appnet
+      - apisix-net
+
+  wordpress_db:
+    image: bitnami/mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+    volumes:
+      - wordpress_db_data:/bitnami/mysql
+    networks:
+      - appnet
+
+  etcd:
+    image: bitnami/etcd:3.5.21-debian-12-r6
+    platform: linux/amd64
+    container_name: etcd
+    environment:
+      ETCD_ENABLE_V2: "true"
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+    volumes:
+      - etcd_data:/bitnami/etcd
+    networks:
+      - apisix-net
+
+  apisix:
+    image: apache/apisix:2.13.1-alpine
+    platform: linux/amd64
+    restart: always
+    container_name: apisix
+    depends_on:
+      - etcd
+    ports:
+      - "9080:9080/tcp"
+      - "9443:9443/tcp"
+      - "9180:9180/tcp"
+    volumes:
+      - ./apisix_log:/usr/local/apisix/logs
+      - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+    networks:
+      - apisix-net
+      - appnet
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb-dev
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: mydb
+      MARIADB_USER: user
+      MARIADB_PASSWORD: userpass
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - appnet
+
+  gofiber:
+    image: subhavich/gofiber:latest
+    restart: always
+    container_name: gofiber_backend
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      DB_USER: user
+      DB_PASS: userpass
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: mydb
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - appnet
+      - apisix-net
+
+  reactapp:
+    build: ./dashboard-react
+    command: npm run dev
+    ports:
+      - "5174:3000"
+    volumes:
+      - ./dashboard-react:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:9080
+      - VITE_PUBLIC_KEY=abc123
+      - NODE_ENV=development
+    networks:
+      - appnet
+
+networks:
+  apisix-net:
+  appnet:
+
+volumes:
+  mariadb_data:
+  etcd_data:
+  wordpress_data:
+  wordpress_db_data:
+
+
+# services:
+#   etcd:
+#     image: bitnami/etcd:3.5.21-debian-12-r6
+#     platform: linux/amd64
+#     container_name: etcd
+#     environment:
+#       ETCD_ENABLE_V2: "true"
+#       ALLOW_NONE_AUTHENTICATION: "yes"
+#       ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+#       ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+#     volumes:
+#       - etcd_data:/bitnami/etcd
+#     networks:
+#       - apisix-net
+
+#   apisix:
+#     image: apache/apisix:2.13.1-alpine
+    
+#     platform: linux/amd64
+#     restart: always
+#     container_name: apisix
+#     depends_on:
+#       - etcd
+#     volumes:
+#       - ./apisix_log:/usr/local/apisix/logs
+#       - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+#     networks:
+#       - apisix-net
+#       - appnet
+
+#   mariadb:
+#     image: mariadb:10.11
+#     container_name: mariadb-dev
+#     restart: always
+#     environment:
+#       MARIADB_ROOT_PASSWORD: rootpass
+#       MARIADB_DATABASE: mydb
+#       MARIADB_USER: user
+#       MARIADB_PASSWORD: userpass
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 3s
+#       timeout: 5s
+#       retries: 5
+#     volumes:
+#       - mariadb_data:/var/lib/mysql
+#       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#     networks:
+#       - appnet
+
+#   gofiber:
+#     image: subhavich/gofiber:latest
+#     restart: always
+#     container_name: gofiber_backend
+#     environment:
+#       PORT: 8000
+#       DB_USER: user
+#       DB_PASS: userpass
+#       DB_HOST: mariadb
+#       DB_PORT: 3306
+#       DB_NAME: mydb
+#     depends_on:
+#       mariadb:
+#         condition: service_healthy
+#     networks:
+#       - appnet
+#       - apisix-net
+
+#   reactapp:
+#     build: ./dashboard-react
+#     command: npm run dev -- --host
+#     ports:
+#       - "5173:3000" 
+#       - "24678:24678" 
+#     volumes:
+#       - ./dashboard-react:/app
+#       - /app/node_modules
+#     environment:
+#       - VITE_API_URL=http://apisix:9080/
+#       - VITE_PUBLIC_KEY=abc123
+#       - NODE_ENV=development
+#     networks:
+#       - appnet
+#       - apisix-net 
+
+
+
+
+# services:
+#   etcd:
+#     image: bitnami/etcd:3.5.21-debian-12-r6
+#     platform: linux/amd64
+#     container_name: etcd
+#     environment:
+#       ETCD_ENABLE_V2: "true"
+#       ALLOW_NONE_AUTHENTICATION: "yes"
+#       ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+#       ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+#     volumes:
+#       - etcd_data:/bitnami/etcd
+#     # ports:
+#     #   - "32379:2379"
+#     networks:
+#       - apisix-net
+
+#   apisix:
+#     image: apache/apisix:2.13.1-alpine
+#     platform: linux/amd64
+#     restart: always
+#     container_name: apisix
+#     depends_on:
+#       - etcd
+#     ports:
+#       - "9080:9080/tcp"   # HTTP public port
+#       - "9443:9443/tcp"   # HTTPS public port
+#       - "9180:9180/tcp"   # Admin API port
+#     volumes:
+#       - ./apisix_log:/usr/local/apisix/logs
+#       - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+#     networks:
+#       - apisix-net
+#       - appnet
+
+#   mariadb:
+#     image: mariadb:10.11
+#     container_name: mariadb-dev
+#     restart: always
+#     environment:
+#       MARIADB_ROOT_PASSWORD: rootpass
+#       MARIADB_DATABASE: mydb
+#       MARIADB_USER: user
+#       MARIADB_PASSWORD: userpass
+#     ports:
+#       - "3306:3306"
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#       interval: 3s
+#       timeout: 5s
+#       retries: 5
+#     volumes:
+#       - mariadb_data:/var/lib/mysql
+#       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#     networks:
+#       - appnet
+#   gofiber:
+#     image: subhavich/gofiber:latest
+#     restart: always
+#     container_name: gofiber_backend
+#     ports:
+#       - "8000:8000"
+#     environment:
+#       PORT: 8000
+#       DB_USER: user
+#       DB_PASS: userpass
+#       DB_HOST: mariadb
+#       DB_PORT: 3306
+#       DB_NAME: mydb
+#     depends_on:
+#       mariadb:
+#         condition: service_healthy
+#     networks:
+#       - appnet
+#       - apisix-net
+
+#   reactapp:
+#     build: ./dashboard-react
+#     command: npm run dev
+#     ports:
+#       - "5174:3000"
+#     volumes:
+#       - ./dashboard-react:/app         # Bind mount for live editing
+#       - /app/node_modules      # Prevent overwriting node_modules
+#     environment:
+#       - VITE_API_URL=http://localhost:9080
+#       - VITE_PUBLIC_KEY=abc123
+#       - NODE_ENV=development
+#     networks:
+#       - appnet
+
+# networks:
+#   apisix-net:
+#   appnet:
+
+# volumes:
+#   mariadb_data:
+#   etcd_data:

@@ -1,0 +1,11 @@
+//Successful user creation
+$ curl -X PUT http://localhost:9080/apisix/admin/consumers/user1   -H "X-API-KEY: admin"   -H "Content-Type: application/json"   -d '{
+    "username": "user1",
+    "plugins": {
+      "key-auth": {
+        "key": "admin"
+      }
+    }
+  }'
+{"node":{"key":"\/apisix\/consumers\/user1","value":{"create_time":1749174875,"username":"user1","update_time":1749174875,"plugins":{"key-auth":{"key":"admin"}}}},"action":"set"}
+
