@@ -40,7 +40,7 @@ export default function Upstreams() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-2">Upstreams</h1>
+      <h1 className="">Upstreams</h1>
       <DefaultServices />
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
       <section className="flex flex-col sm:flex-row justify-between gap-4">
@@ -285,7 +285,13 @@ function Item({ node, setData, setError, setForm }) {
 
   return (
     <div
-      className="my-4 p-2 bg-white flex flex-col justify-center gap-1 max-h-56 md:w-40 md:max-w-[375px] text-black rounded cursor-pointer shadow border border-gray-200 hover:bg-gray-300 transition"
+      className="my-4 px-2 py-3 bg-white 
+      flex flex-col justify-between
+      gap-1 max-h-56 md:w-40 
+      md:max-w-[375px] 
+      text-black rounded 
+      cursor-pointer shadow border 
+      border-gray-200 hover:bg-gray-300 transition"
       onClick={handleFillForm}
     >
       <h3 className="text-xs sm:text-sm font-bold">Upstream: {id}</h3>
