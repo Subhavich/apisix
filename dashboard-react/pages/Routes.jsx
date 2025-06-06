@@ -63,11 +63,6 @@ function CreateRoute({ setRoutes, setError }) {
     useAuth: false, // <-- new
   });
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setForm((prev) => ({ ...prev, [name]: value }));
-  // };
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -83,18 +78,6 @@ function CreateRoute({ setRoutes, setError }) {
     if (!id || !uri || !upstream_id)
       return alert("ID, URI, and Upstream ID are required");
 
-    // const body = {
-    //   id,
-    //   uri,
-    //   methods: [method],
-    //   upstream_id,
-    //   status: 1,
-    //   plugins: {
-    //     "proxy-rewrite": {
-    //       uri: rewrite_uri || uri, // fallback to match uri if not rewritten
-    //     },
-    //   },
-    // };
     const body = {
       id,
       uri,
