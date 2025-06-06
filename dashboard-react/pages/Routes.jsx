@@ -9,6 +9,14 @@ const ADMIN = import.meta.env.VITE_API_KEY || "admin";
 export default function Routes() {
   const [routes, setRoutes] = useState([]);
   const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    id: "",
+    uri: "",
+    method: "GET",
+    upstream_id: "",
+    rewrite_uri: "",
+    useAuth: false,
+  });
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -42,27 +50,24 @@ export default function Routes() {
               route={route}
               setRoutes={setRoutes}
               setError={setError}
+              setForm={setForm}
             />
           ))
         ) : (
           <p>No routes found</p>
         )}
       </div>
-      <CreateRoute setRoutes={setRoutes} setError={setError} />
+      <CreateRoute
+        form={form}
+        setForm={setForm}
+        setRoutes={setRoutes}
+        setError={setError}
+      />
     </>
   );
 }
 
-function CreateRoute({ setRoutes, setError }) {
-  const [form, setForm] = useState({
-    id: "",
-    uri: "",
-    method: "GET",
-    upstream_id: "",
-    rewrite_uri: "",
-    useAuth: false, // <-- new
-  });
-
+function CreateRoute({ form, setForm, setRoutes, setError }) {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -73,27 +78,26 @@ function CreateRoute({ setRoutes, setError }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { id, uri, method, upstream_id, rewrite_uri } = form;
 
-    if (!id || !uri || !upstream_id)
+    if (!form.id || !form.uri || !form.upstream_id)
       return alert("ID, URI, and Upstream ID are required");
 
     const body = {
-      id,
-      uri,
-      methods: [method],
-      upstream_id,
+      id: form.id,
+      uri: form.uri,
+      methods: [form.method],
+      upstream_id: form.upstream_id,
       status: 1,
       plugins: {
         "proxy-rewrite": {
-          uri: rewrite_uri || uri,
+          uri: form.rewrite_uri || form.uri,
         },
-        ...(form.useAuth && { "key-auth": {} }), // conditional inclusion
+        ...(form.useAuth && { "key-auth": {} }),
       },
     };
 
     try {
-      const res = await fetch(`${API_URL}/apisix/admin/routes/${id}`, {
+      const res = await fetch(`${API_URL}/apisix/admin/routes/${form.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -121,6 +125,7 @@ function CreateRoute({ setRoutes, setError }) {
         method: "GET",
         upstream_id: "",
         rewrite_uri: "",
+        useAuth: false,
       });
     } catch (err) {
       console.error("Create error:", err);
@@ -144,7 +149,7 @@ function CreateRoute({ setRoutes, setError }) {
       />
       <FormField
         name="uri"
-        label="Public URI (e.g. /chitin)"
+        label="Public URI (e.g. /api/posts)"
         value={form.uri}
         onChange={handleChange}
         required
@@ -168,7 +173,7 @@ function CreateRoute({ setRoutes, setError }) {
       />
       <FormField
         name="rewrite_uri"
-        label="Rewrite URI (e.g. /api/data)"
+        label="Rewrite URI (e.g. /wp-json/wp/v2/posts)"
         value={form.rewrite_uri}
         onChange={handleChange}
         placeholder="Optional, defaults to same as Public URI"
@@ -195,8 +200,8 @@ function CreateRoute({ setRoutes, setError }) {
   );
 }
 
-function RouteItem({ route, setRoutes, setError }) {
-  const { id, uri, methods, upstream_id } = route.value;
+function RouteItem({ route, setRoutes, setError, setForm }) {
+  const { id, uri, methods, upstream_id, plugins } = route.value;
 
   const handleDelete = async () => {
     try {
@@ -228,8 +233,22 @@ function RouteItem({ route, setRoutes, setError }) {
     }
   };
 
+  const handleFillForm = () => {
+    setForm({
+      id,
+      uri,
+      method: methods?.[0] || "GET",
+      upstream_id: upstream_id || "",
+      rewrite_uri: plugins?.["proxy-rewrite"]?.uri || uri,
+      useAuth: Boolean(plugins?.["key-auth"]),
+    });
+  };
+
   return (
-    <div className="my-4 p-4 bg-white text-black rounded shadow">
+    <div
+      className="my-4 p-4 bg-white text-black rounded shadow cursor-pointer hover:bg-gray-50 transition"
+      onClick={handleFillForm}
+    >
       <h3 className="text-lg font-bold">Route: {id}</h3>
       <p>URI: {uri}</p>
       <p>Method(s): {methods?.join(", ")}</p>
