@@ -41,30 +41,36 @@ export default function Routes() {
 
   return (
     <>
-      <h1>Routes</h1>
-      <UpstreamList />
-      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
-      <div>
-        {routes.length > 0 ? (
-          routes.map((route, i) => (
-            <RouteItem
-              key={route.key || i}
-              route={route}
-              setRoutes={setRoutes}
-              setError={setError}
-              setForm={setForm}
-            />
-          ))
-        ) : (
-          <p>No routes found</p>
-        )}
+      <div className="p-4">
+        <h1 className="">Routes</h1>
+        <UpstreamList />
+        <section className="flex flex-col justify-between sm:flex-row">
+          {error && (
+            <ErrorModal message={error} onClose={() => setError(null)} />
+          )}
+          <aside className=" sm:max-w-7/12  flex sm:flex-wrap flex-col sm:flex-row gap-2 ">
+            {routes.length > 0 ? (
+              routes.map((route, i) => (
+                <RouteItem
+                  key={route.key || i}
+                  route={route}
+                  setRoutes={setRoutes}
+                  setError={setError}
+                  setForm={setForm}
+                />
+              ))
+            ) : (
+              <p>No routes found</p>
+            )}
+          </aside>
+          <CreateRoute
+            form={form}
+            setForm={setForm}
+            setRoutes={setRoutes}
+            setError={setError}
+          />
+        </section>
       </div>
-      <CreateRoute
-        form={form}
-        setForm={setForm}
-        setRoutes={setRoutes}
-        setError={setError}
-      />
     </>
   );
 }
@@ -138,7 +144,7 @@ function CreateRoute({ form, setForm, setRoutes, setError }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-4 p-4 bg-white text-black flex flex-col gap-3"
+      className="md:max-w-[375px] sm:w-full   mt-4 p-4 shadow border border-gray-200 rounded  text-black flex flex-col gap-3"
     >
       <h2 className="text-lg font-bold">Create Route</h2>
 
@@ -248,13 +254,14 @@ function RouteItem({ route, setRoutes, setError, setForm }) {
 
   return (
     <div
-      className="my-4 p-4 bg-white text-black rounded shadow cursor-pointer hover:bg-gray-50 transition"
+      className="my-4 p-2 bg-white 
+      flex flex-col justify-center gap-1 max-h-56 md:w-40  md:max-w-[375px] text-black rounded  cursor-pointer shadow border border-gray-200 hover:bg-gray-300 transition"
       onClick={handleFillForm}
     >
-      <h3 className="text-lg font-bold">Route: {id}</h3>
-      <p>URI: {uri}</p>
-      <p>Method(s): {methods?.join(", ")}</p>
-      <p>Upstream ID: {upstream_id}</p>
+      <h3 className="text-xs sm:text-sm font-bold">Route: {id}</h3>
+      <p className="text-xs">URI: {uri}</p>
+      <p className="text-xs">Method(s): {methods?.join(", ")}</p>
+      <p className="text-xs">Upstream ID: {upstream_id}</p>
       <button
         onClick={handleDelete}
         className="mt-4 bg-red-500 text-white px-3 py-1 rounded"

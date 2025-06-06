@@ -8,7 +8,7 @@ export function FormField({
   required = false,
 }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-2">
       <span className="text-sm font-medium">
         {label}
         {placeholder && (
@@ -20,7 +20,7 @@ export function FormField({
         name={name}
         value={value}
         onChange={onChange}
-        className="border p-1"
+        className="border p-2 cursor-pointer"
         required={required}
       />
     </label>
@@ -36,7 +36,7 @@ export function SelectField({
   placeholder,
 }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex flex-col gap-2">
       <span className="text-sm font-medium">
         {label}
         {placeholder && (
@@ -47,7 +47,7 @@ export function SelectField({
         name={name}
         value={value}
         onChange={onChange}
-        className="border p-1"
+        className="border p-2 cursor-pointer"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>

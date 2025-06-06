@@ -38,17 +38,15 @@ export default function UpstreamList() {
 
   if (error)
     return (
-      <p className="text-red-500">
-        cannot load upstreams at this moment type shi
-      </p>
+      <p className="text-red-500">Unable to load Upstream at this moment</p>
     );
 
   return (
-    <div className="mt-4 p-4 bg-white rounded shadow text-black">
+    <div className="mt-4 p-4 shadow text-white border border-gray-200 bg-blue-500 rounded  ">
       <h2 className="text-lg font-bold mb-2">Upstream List</h2>
       <ul className="list-disc pl-5 space-y-1">
         {upstreams.map(({ id, nodeKey }) => (
-          <li key={id}>
+          <li className=" list-none" key={id}>
             <strong>{id}</strong>: {nodeKey}
           </li>
         ))}
