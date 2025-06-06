@@ -6,8 +6,15 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ADMIN = import.meta.env.VITE_API_KEY || "admin";
 export default function Upstreams() {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    id: "",
+    node: "",
+    scheme: "http",
+    type: "roundrobin",
+    pass_host: "pass",
+    upstream_host: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,27 +49,24 @@ export default function Upstreams() {
               node={node}
               setData={setData}
               setError={setError}
+              setForm={setForm}
             />
           ))
         ) : (
-          <p>Please Create Upstream</p>
+          <p className="my-2">Please Create Upstream</p>
         )}
       </div>
-      <Create setData={setData} setError={setError} />
+      <Create
+        form={form}
+        setForm={setForm}
+        setData={setData}
+        setError={setError}
+      />
     </>
   );
 }
 
-function Create({ setData }) {
-  const [form, setForm] = useState({
-    id: "",
-    node: "",
-    scheme: "http",
-    type: "roundrobin",
-    pass_host: "pass",
-    upstream_host: "",
-  });
-
+function Create({ form, setForm, setError, setData }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -95,7 +99,7 @@ function Create({ setData }) {
         },
         body: JSON.stringify(body),
       });
-      console.log(res);
+
       if (!res.ok) throw new Error("Failed to create upstream");
 
       // Reset form
@@ -121,6 +125,7 @@ function Create({ setData }) {
       setData(json.node.nodes);
     } catch (err) {
       console.error("Create error:", err);
+      setError("Failed to create upstream");
     }
   };
 
@@ -202,8 +207,8 @@ function Create({ setData }) {
   );
 }
 
-function Item({ node, setData, setError }) {
-  const { id, scheme, type } = node.value;
+function Item({ node, setData, setError, setForm }) {
+  const { id, scheme, type, pass_host, nodes, upstream_host } = node.value;
   const [linkedRoutes, setLinkedRoutes] = useState([]);
 
   useEffect(() => {
@@ -219,7 +224,6 @@ function Item({ node, setData, setError }) {
         const allRoutes = json.node?.nodes || [];
 
         const matches = allRoutes.filter((r) => r.value?.upstream_id === id);
-
         setLinkedRoutes(matches);
       } catch (err) {
         console.error("Failed to fetch routes for upstream", err);
@@ -228,6 +232,18 @@ function Item({ node, setData, setError }) {
 
     fetchRoutes();
   }, [id]);
+
+  const handleFillForm = () => {
+    const nodeEntry = nodes && Object.entries(nodes)[0];
+    setForm({
+      id,
+      node: nodeEntry ? nodeEntry[0] : "",
+      scheme,
+      type,
+      pass_host,
+      upstream_host: upstream_host || "",
+    });
+  };
 
   const handleDelete = async () => {
     try {
@@ -263,7 +279,10 @@ function Item({ node, setData, setError }) {
   };
 
   return (
-    <div className="my-4 p-4 bg-white text-black rounded shadow">
+    <div
+      className="my-4 p-4 bg-white text-black rounded shadow cursor-pointer hover:bg-gray-50 transition"
+      onClick={handleFillForm}
+    >
       <h3 className="font-bold text-lg">{id}</h3>
       <p>Scheme: {scheme}</p>
       <p>Type: {type}</p>
