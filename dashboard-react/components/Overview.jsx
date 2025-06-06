@@ -10,7 +10,7 @@ export default function Overview() {
   useEffect(() => {
     const fetchOverview = async () => {
       try {
-        // Step 1: Fetch all upstreams
+        // Fetch upstreams
         const upstreamRes = await fetch(`${API_URL}/apisix/admin/upstreams`, {
           headers: {
             "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export default function Overview() {
         const upstreamJson = await upstreamRes.json();
         const upstreamNodes = upstreamJson.node?.nodes || [];
 
-        // Step 2: Fetch all routes
+        // Fetch routes
         const routeRes = await fetch(`${API_URL}/apisix/admin/routes`, {
           headers: {
             "Content-Type": "application/json",
@@ -44,7 +44,7 @@ export default function Overview() {
                 uri: val.uri,
                 method: val.methods?.join(", "),
                 rewrite: val.plugins?.["proxy-rewrite"]?.uri || "-",
-                auth: val.plugins?.["key-auth"] ? "🔒" : "—",
+                auth: val.plugins?.["key-auth"] ? "🔒" : "",
               };
             });
 
@@ -68,7 +68,9 @@ export default function Overview() {
 
   return (
     <div className="p-4 text-black">
-      <h2 className="text-xl font-bold mb-4">🗺️ Upstream Overview</h2>
+      <h2 className="text-lg sm:text-xl font-bold mb-4">
+        🗺️ Upstream Overview
+      </h2>
       {overview.length === 0 ? (
         <p>No upstreams found</p>
       ) : (
@@ -77,11 +79,15 @@ export default function Overview() {
             key={upstreamId}
             className="mb-6 p-4 bg-white rounded shadow border border-gray-200"
           >
-            <h3 className="text-lg font-bold mb-2">{upstreamId}</h3>
+            <h3 className="text-sm sm:text-base font-bold mb-2">
+              {upstreamId}
+            </h3>
             {routes.length === 0 ? (
-              <p className="text-sm text-gray-500">No routes linked</p>
+              <p className="text-xs sm:text:sm text-gray-500">
+                No routes linked
+              </p>
             ) : (
-              <ul className="text-sm space-y-1">
+              <ul className="text-xs sm:text:sm space-y-1">
                 {routes.map((r) => (
                   <li
                     key={r.id}

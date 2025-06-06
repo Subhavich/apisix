@@ -50,7 +50,7 @@ export default function ApiKeyGenerator() {
   };
 
   return (
-    <div className="bg-white text-black p-4 rounded shadow mt-6">
+    <div className="m-4 p-4 rounded shadow border border-gray-200 mt-6">
       <h2 className="text-lg font-bold mb-2">Generate API Key</h2>
 
       <input

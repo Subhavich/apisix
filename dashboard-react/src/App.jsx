@@ -50,7 +50,7 @@ function App() {
         )}
       </nav>
 
-      <main className="px-4 mt-6">
+      <main className="text-xs sm:text:sm px-2 py-4 mt-6 bg-white ">
         <Outlet />
       </main>
     </div>
