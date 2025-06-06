@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { SelectField, FormField } from "../components/Forms";
 import { Link } from "react-router-dom";
 import ErrorModal from "../components/ErrorModal";
+import DefaultServices from "../components/ServicesList";
 const API_URL = import.meta.env.VITE_API_URL;
 const ADMIN = import.meta.env.VITE_API_KEY || "admin";
 export default function Upstreams() {
@@ -40,6 +41,7 @@ export default function Upstreams() {
   return (
     <>
       <h1>Upstreams</h1>
+      <DefaultServices />
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
       <div>
         {data && data.length > 0 ? (
