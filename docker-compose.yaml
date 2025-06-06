@@ -127,7 +127,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:9080
-      - VITE_PUBLIC_KEY=abc123
+      - VITE_API_KEY=admin
       - NODE_ENV=development
     networks:
       - appnet
