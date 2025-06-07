@@ -7,11 +7,6 @@ export default defineConfig({
   server: {
     host: true,
     port: 3000,
-    hmr: {
-      protocol: "ws",
-      host: "localhost", // 👈 Host of your machine, not "reactapp"
-      port: 24678,
-    },
     watch: {
       usePolling: true,
     },
