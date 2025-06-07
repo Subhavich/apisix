@@ -120,7 +120,7 @@ services:
       - apisix-net
 
   reactapp:
-    build: subhavich/dashboard-react:latest
+    image: subhavich/dashboard-react:latest
     ports:
       - "5174:3000"
     volumes:
