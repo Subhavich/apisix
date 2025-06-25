@@ -1,1 +1,3 @@
 /apisix_log/
+apisix_log/access.log
+apisix_log/error.log
